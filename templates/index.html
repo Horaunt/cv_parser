@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Processor</title>
+</head>
+<body>
+    <h1>CV Processor</h1>
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" name="file" id="file-input" accept=".pdf,.docx">
+        <button type="submit">Upload</button>
+    </form>
+    <div id="output"></div>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var form = event.target;
+            var formData = new FormData(form);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    var downloadLink = document.createElement('a');
+                    downloadLink.href = data.excel_path;
+                    downloadLink.textContent = 'Download Excel';
+                    document.getElementById('output').appendChild(downloadLink);
+                } else {
+                    var errorMessage = document.createElement('p');
+                    errorMessage.textContent = 'Error: ' + data.error;
+                    document.getElementById('output').appendChild(errorMessage);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
+ 

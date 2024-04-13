@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from werkzeug.utils import secure_filename
 import os
 import re
@@ -36,7 +36,18 @@ def extract_info(text):
     phone_pattern = r'\b\d{3}[-.\s]??\d{3}[-.\s]??\d{4}\b'
     emails = re.findall(email_pattern, text)
     phones = re.findall(phone_pattern, text)
+    
+    # Pad the shorter array with empty strings to make them equal in length
+    max_length = max(len(emails), len(phones))
+    emails += [''] * (max_length - len(emails))
+    phones += [''] * (max_length - len(phones))
+    
     return {'emails': emails, 'phones': phones}
+
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -61,13 +72,16 @@ def upload_file():
             return jsonify({'error': 'Unsupported file format'})
         
         info = extract_info(text)
+        print("Extracted info:", info)  # Add this line for debugging
         df = pd.DataFrame(info)
+        print("DataFrame shape:", df.shape)  # Add this line for debugging
         excel_path = os.path.join('output', 'cv_info.xlsx')
         df.to_excel(excel_path, index=False)
         
         return jsonify({'success': True, 'excel_path': excel_path})
     else:
         return jsonify({'error': 'Unsupported file type'})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
