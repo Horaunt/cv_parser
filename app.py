@@ -54,33 +54,34 @@ def upload_file():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'})
     
-    file = request.files['file']
+    files = request.files.getlist('file')
+    extracted_info = {'emails': [], 'phones': []}
+
+    for file in files:
+        if file.filename == '':
+            continue
+        
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+            
+            if filename.endswith('.pdf'):
+                text = extract_text_from_pdf(file_path)
+            elif filename.endswith('.docx'):
+                text = extract_text_from_docx(file_path)
+            else:
+                continue
+            
+            info = extract_info(text)
+            extracted_info['emails'].extend(info['emails'])
+            extracted_info['phones'].extend(info['phones'])
+
+    df = pd.DataFrame(extracted_info)
+    excel_path = os.path.join('output', 'cv_info.xlsx')
+    df.to_excel(excel_path, index=False)
     
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'})
-    
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
-        
-        if filename.endswith('.pdf'):
-            text = extract_text_from_pdf(file_path)
-        elif filename.endswith('.docx'):
-            text = extract_text_from_docx(file_path)
-        else:
-            return jsonify({'error': 'Unsupported file format'})
-        
-        info = extract_info(text)
-        print("Extracted info:", info)  # Add this line for debugging
-        df = pd.DataFrame(info)
-        print("DataFrame shape:", df.shape)  # Add this line for debugging
-        excel_path = os.path.join('output', 'cv_info.xlsx')
-        df.to_excel(excel_path, index=False)
-        
-        return jsonify({'success': True, 'excel_path': excel_path})
-    else:
-        return jsonify({'error': 'Unsupported file type'})
+    return jsonify({'success': True, 'excel_path': excel_path})
 
 
 if __name__ == '__main__':
