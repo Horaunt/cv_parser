@@ -4,6 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CV Processor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 50px;
+            color: #333;
+        }
+
+        #upload-form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        #file-input {
+            padding: 10px;
+            margin-right: 10px;
+        }
+
+        #output {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .download-link {
+            display: block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        .download-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     <h1>CV Processor</h1>
@@ -29,10 +76,12 @@
                     var downloadLink = document.createElement('a');
                     downloadLink.href = data.excel_path;
                     downloadLink.textContent = 'Download Excel';
+                    downloadLink.className = 'download-link';
                     document.getElementById('output').appendChild(downloadLink);
                 } else {
                     var errorMessage = document.createElement('p');
                     errorMessage.textContent = 'Error: ' + data.error;
+                    errorMessage.className = 'error';
                     document.getElementById('output').appendChild(errorMessage);
                 }
             })
